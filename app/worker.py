@@ -201,26 +201,9 @@ def process_audio(self, job_id: str, file_path: str) -> None:
         merged["mode"]   = harmony.get("mode",   analysis.get("mode",   "minor"))
         merged["camelot"]= harmony.get("camelot",analysis.get("camelot","?"))
 
-    # ── Step 7: MusicGen ───────────────────────────────────────────────────
-    variations: dict = {"intros": [], "outros": []}
-    try:
-        from app.pipeline.musicgen import generate_variations
-        variations = generate_variations(
-            stems=stems,
-            analysis=merged,
-            beats_data=beats_data,
-            output_dir=str(job_out),
-            job_id=job_id,
-        )
-        result["variations"] = variations
-        good_i = sum(1 for p in variations.get("intros", []) if p)
-        good_o = sum(1 for p in variations.get("outros", []) if p)
-        logger.info("[%s] MusicGen done — intros=%d/3  outros=%d/3", job_id, good_i, good_o)
-    except Exception as exc:
-        logger.error("[%s] MusicGen failed: %s", job_id, exc)
-        update_job(job_id, error=f"MusicGen failed: {exc}")
-    finally:
-        gc.collect()
+    # ── Step 7: MusicGen (disabled — insufficient RAM, needs 12GB+) ───────────
+    result["variations"] = {"intros": [], "outros": []}
+    gc.collect()
 
     # ── Finalise ───────────────────────────────────────────────────────────
     save_result(job_id, result)

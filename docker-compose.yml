@@ -19,7 +19,7 @@ services:
       - OUTPUT_DIR=/app/outputs
       - MODELS_CACHE_DIR=/app/models_cache
     ports:
-      - "127.0.0.1:8084:8000"
+      - "8084:8000"
     volumes:
       - uploads:/app/uploads
       - outputs:/app/outputs

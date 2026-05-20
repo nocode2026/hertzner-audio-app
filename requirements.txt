@@ -1,0 +1,26 @@
+# Web framework
+fastapi==0.111.0
+uvicorn==0.29.0
+python-multipart==0.0.9
+pydantic==2.7.0
+
+# Task queue
+celery==5.3.6
+redis==5.0.4
+
+# Audio processing
+pydub==0.25.1
+pyrubberband
+
+# ML/Audio analysis - installed via Dockerfile RUN commands in correct order:
+# 1. torch==2.7.0 (CPU)
+# 2. natten==0.21.6 (CPU-only, po torch)
+# 3. all-in-one-fix --no-build-isolation (BPM, beats, downbeats, structure)
+# 4. --pre essentia (spectrum, LUFS, waveform RGB)
+# 5. demucs (stem separation: vocals/drums/bass/melody)
+# 6. audiocraft (MusicGen intro/outro generation)
+# 7. git+https://github.com/MTG/OMAR-RQ.git (chord recognition, key detection)
+
+# Numerics
+numpy
+scipy

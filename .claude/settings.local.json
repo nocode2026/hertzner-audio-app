@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker-compose config *)",
+      "Bash(docker compose config *)",
+      "Bash(python3 *)",
+      "Bash(docker compose *)",
+      "Bash(pip install *)",
+      "Bash(pip3 install *)",
+      "Bash(apt-get install *)",
+      "Bash(docker build *)",
+      "Bash(docker run *)",
+      "Bash(curl -s http://localhost:8001/health)",
+      "Bash(curl -s -X OPTIONS http://localhost:8001/health -H 'Origin: http://localhost:3000' -H 'Access-Control-Request-Method: GET' -I)",
+      "Bash(curl -s http://localhost:8001/health -H 'Origin: https://myapp.vercel.app' -I)",
+      "Bash(curl -s http://localhost:8001/nonexistent)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8001/docs)",
+      "Bash(docker rm *)",
+      "Bash(docker rmi *)",
+      "Bash(curl -s -X POST http://localhost:8001/api/upload -F 'file=@/tmp/big.bin;type=audio/wav')",
+      "Bash(curl -s -X POST http://localhost:8001/api/upload -F 'file=@/tmp/fake.mp3;type=audio/mpeg')",
+      "Bash(curl -s -X POST http://localhost:8001/api/upload -F 'file=@/tmp/image.mp3;type=audio/mpeg')",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8001/api/status/00000000-0000-0000-0000-000000000000)",
+      "Bash(docker system *)",
+      "Bash(docker buildx *)",
+      "Bash(grep -v \"^$\")",
+      "WebFetch(domain:github.com)",
+      "Read(//tmp/**)",
+      "Read(//home/dawid/**)",
+      "Bash(npm run *)"
+    ]
+  }
+}

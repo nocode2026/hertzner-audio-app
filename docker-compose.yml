@@ -52,6 +52,13 @@ services:
     command: celery -A app.worker worker --loglevel=info --concurrency=1
     mem_limit: 14g
 
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 60 --cleanup
+
   nginx:
     image: nginx:alpine
     restart: unless-stopped

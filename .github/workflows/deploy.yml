@@ -27,13 +27,13 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 178.104.240.48 >> ~/.ssh/known_hosts
+
       - name: Deploy on VPS
-        uses: appleboy/ssh-action@v1
-        with:
-          host: 178.104.240.48
-          username: dawid
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /home/dawid/apps/audio-app
-            docker compose pull
-            docker compose up -d
+        run: |
+          ssh -i ~/.ssh/deploy_key dawid@178.104.240.48 "cd /home/dawid/apps/audio-app && docker compose pull && docker compose up -d"

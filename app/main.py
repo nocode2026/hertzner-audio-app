@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
-from app.jobs import create_job, get_job, get_result
+from app.jobs import acquire_active_job, create_job, get_job, get_result
 from app.models.schemas import JobResultResponse, JobStatusResponse, ReprocessRequest, UploadResponse
 
 logging.basicConfig(
@@ -113,6 +113,23 @@ async def upload_audio(file: UploadFile) -> UploadResponse:
     # --- save with UUID name ---
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     job_id = str(uuid.uuid4())
+
+    # --- enforce single active analysis at a time ---
+    acquired, active_job_id = acquire_active_job(job_id)
+    if not acquired:
+        active_job = get_job(active_job_id) if active_job_id else None
+        status = active_job.get("status") if active_job else "processing"
+        step = active_job.get("current_step") if active_job else None
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "Another analysis is already running. Try again when it finishes.",
+                "active_job_id": active_job_id,
+                "active_status": status,
+                "active_step": step,
+            },
+        )
+
     dest = UPLOAD_DIR / f"{job_id}{ext}"
     dest.write_bytes(raw)
 

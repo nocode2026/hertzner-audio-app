@@ -78,7 +78,7 @@ def process_audio(self, job_id: str, file_path: str) -> None:
     Each step is wrapped in try/except — failure writes to job.error but
     pipeline continues so downstream steps can use whatever data is available.
     """
-    from app.jobs import update_job, save_result
+    from app.jobs import release_active_job, save_result, update_job
 
     update_job(job_id, status="processing", progress=0, current_step="starting")
     logger.info("[%s] pipeline starting — %s", job_id, file_path)
@@ -106,9 +106,12 @@ def process_audio(self, job_id: str, file_path: str) -> None:
 
     # ── Step 2: Demucs ─────────────────────────────────────────────────────
     stems: dict = {}
+    allin1_stems_dir: Optional[str] = None
     try:
         from app.pipeline.demucs import separate_stems
         stems = separate_stems(wav_path, str(stems_dir), job_id=job_id)
+        if stems.get("bass"):
+            allin1_stems_dir = str(Path(stems["bass"]).parent)
         result["stems"] = stems
         logger.info("[%s] Demucs done — stems: %s", job_id, list(stems.keys()))
     except Exception as exc:
@@ -137,7 +140,7 @@ def process_audio(self, job_id: str, file_path: str) -> None:
         from app.pipeline.allin1fix import analyze_beats
         beats_data = analyze_beats(
             wav_path,
-            stems_dir=str(stems_dir) if stems else None,
+            stems_dir=allin1_stems_dir,
             job_id=job_id,
         )
         result["beats"] = _serializable(beats_data)
@@ -225,6 +228,7 @@ def process_audio(self, job_id: str, file_path: str) -> None:
     # ── Finalise ───────────────────────────────────────────────────────────
     save_result(job_id, result)
     update_job(job_id, status="done", progress=100, current_step="done")
+    release_active_job(job_id)
     logger.info("[%s] pipeline complete", job_id)
 
 
@@ -443,7 +447,8 @@ def _serializable(obj: Any) -> Any:
 
 def _fail(job_id: str, step: str, exc: Exception) -> None:
     """Mark job as failed with error message."""
-    from app.jobs import update_job
+    from app.jobs import release_active_job, update_job
     msg = f"{step} failed: {exc}"
     logger.error("[%s] %s", job_id, msg)
     update_job(job_id, status="failed", current_step=step, error=msg)
+    release_active_job(job_id)

@@ -84,17 +84,21 @@ def analyze_beats(
 
     phrases = _compute_phrases(downbeats)
 
+    # allin1fix can return bpm=None for very short/synthetic clips.
+    # Keep pipeline stable by using a safe fallback value.
+    bpm_value = float(result.bpm) if result.bpm is not None else 120.0
+
     elapsed = time.time() - t0
     logger.info(
-        "[%s] allin1fix done in %.1fs — bpm=%d  beats=%d  downbeats=%d  segments=%d",
-        job_id, elapsed, result.bpm, len(beats), len(downbeats), len(segments),
+        "[%s] allin1fix done in %.1fs — bpm=%.2f  beats=%d  downbeats=%d  segments=%d",
+        job_id, elapsed, bpm_value, len(beats), len(downbeats), len(segments),
     )
     _update(job_id, progress=60, current_step="allin1fix_done")
 
     return {
         "beats":           beats,
         "downbeats":       downbeats,
-        "bpm_precise":     float(result.bpm),
+        "bpm_precise":     bpm_value,
         "beat_positions":  beat_positions,
         "segments":        segments,
         "phrases":         phrases,

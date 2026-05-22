@@ -53,6 +53,9 @@ export function UploadView({ onDone }: UploadViewProps) {
           <p className="mt-2 text-gray-400">
             Wgraj utwór, aby wygenerować profesjonalne intro i outro
           </p>
+          <p className="mt-2 text-sm text-amber-300">
+            System przetwarza tylko jeden plik naraz. Kolejny upload będzie dostępny po zakończeniu bieżącej analizy.
+          </p>
         </header>
 
         <DropZone onFile={handleFile} disabled={isBusy} />

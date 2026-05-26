@@ -17,6 +17,27 @@ interface WaveformViewProps {
   height?: number;
 }
 
+function toNumberArray(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is number => typeof item === 'number' && Number.isFinite(item));
+}
+
+function parsePhrases(value: unknown): number[] {
+  if (Array.isArray(value)) return toNumberArray(value);
+  if (!value || typeof value !== 'object') return [];
+
+  const phrases = value as Record<string, unknown>;
+  // Prefer 8-bar phrase anchors when provided by backend.
+  const preferred = toNumberArray(phrases['8bar']);
+  if (preferred.length > 0) return preferred;
+
+  const merged = new Set<number>();
+  for (const maybeArray of Object.values(phrases)) {
+    for (const t of toNumberArray(maybeArray)) merged.add(t);
+  }
+  return [...merged].sort((a, b) => a - b);
+}
+
 // Parse sections from the opaque analysis.structure field
 function parseSections(structure: Record<string, unknown> | null | undefined): WaveformSection[] {
   if (!structure) return [];
@@ -95,6 +116,9 @@ export function WaveformView({
     if (!ready || !rendererRef.current || duration <= 0) return;
 
     const sections: WaveformSection[] = parseSections(analysis?.structure);
+    const beatTimes = toNumberArray(beats?.beats);
+    const downbeatTimes = toNumberArray(beats?.downbeats);
+    const phraseTimes = parsePhrases(beats?.phrases);
     const cues: WaveformCuePoint[] = (cuePoints ?? []).map((c) => ({
       label: c.label,
       time:  c.time,
@@ -103,9 +127,9 @@ export function WaveformView({
     rendererRef.current.setData({
       frames:    waveformData,
       duration,
-      beats:     beats?.beats     ?? [],
-      downbeats: beats?.downbeats ?? [],
-      phrases:   beats?.phrases   ?? [],
+      beats:     beatTimes,
+      downbeats: downbeatTimes,
+      phrases:   phraseTimes,
       sections,
       cuePoints: cues,
     });

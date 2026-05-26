@@ -21,7 +21,7 @@ export interface BeatData {
   bpm: number;
   beats: number[];
   downbeats: number[];
-  phrases: number[];
+  phrases: number[] | Record<string, number[]> | null;
   time_signature: string | null;
   first_downbeat: number;
 }

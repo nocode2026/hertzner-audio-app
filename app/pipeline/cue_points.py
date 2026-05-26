@@ -134,11 +134,11 @@ def _beat_number(time: float, beats: list) -> int:
 
 def _cue(id: str, label: str, time: float, beats: list, key: Optional[str] = None) -> dict:
     return {
-        "id":           id,
-        "label":        label,
-        "time":         round(time, 3),
-        "beat_number":  _beat_number(time, beats),
-        "color":        _COLORS.get(key or id, "#FFFFFF"),
+        "id":    id,
+        "label": label,
+        "time":  round(time, 3),
+        "beat":  _beat_number(time, beats),
+        "color": _COLORS.get(key or id, "#FFFFFF"),
     }
 
 
@@ -148,7 +148,7 @@ def _seg_end(a1_segs: list, ess_segs: list, labels: list, default: float) -> flo
         if seg.get("label") in labels:
             return float(seg["end"])
     for seg in ess_segs:
-        if seg.get("type") in labels:
+        if seg.get("label") in labels or seg.get("type") in labels:
             return float(seg["end"])
     return default
 
@@ -159,7 +159,7 @@ def _seg_start(a1_segs: list, ess_segs: list, labels: list, default) -> Optional
         if seg.get("label") in labels:
             return float(seg["start"])
     for seg in ess_segs:
-        if seg.get("type") in labels:
+        if seg.get("label") in labels or seg.get("type") in labels:
             return float(seg["start"])
     return default
 

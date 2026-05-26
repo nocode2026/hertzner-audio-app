@@ -196,6 +196,7 @@ def _zero_crossing_rate(audio: np.ndarray) -> float:
 def _is_noise_like(audio: np.ndarray) -> bool:
     """
     Heuristic gate for pathological generations that sound like broadband noise.
+    Catches: (high flatness + moderate zcr) OR (extreme flatness alone).
     """
     if audio.size == 0:
         return True
@@ -206,7 +207,7 @@ def _is_noise_like(audio: np.ndarray) -> bool:
 
     flatness = _spectral_flatness(audio)
     zcr = _zero_crossing_rate(audio)
-    return flatness > 0.45 and zcr > 0.18
+    return (flatness > 0.35 and zcr > 0.14) or flatness > 0.55
 
 
 def _load_stem_audio(path: Optional[str], target_sr: int) -> Optional[np.ndarray]:
@@ -461,8 +462,8 @@ def generate_variations(
                         conditioning,
                         max_tokens,
                         seed,
-                        guidance_scale=3.5,
-                        temperature=0.95,
+                        guidance_scale=7.0,
+                        temperature=0.65,
                     )
                     if _is_noise_like(audio):
                         logger.warning(
@@ -478,8 +479,8 @@ def generate_variations(
                             conditioning,
                             max_tokens,
                             seed + 777,
-                            guidance_scale=5.0,
-                            temperature=0.7,
+                            guidance_scale=9.0,
+                            temperature=0.5,
                         )
 
                     if _is_noise_like(audio):

@@ -18,6 +18,7 @@ class JobStatusResponse(BaseModel):
 class JobResultResponse(BaseModel):
     job_id: str
     status: str
+    original_name: str = ""
     analysis: Optional[dict] = None       # Essentia analysis
     beats: Optional[dict] = None          # allin1fix beats/structure
     harmony: Optional[dict] = None        # OMAR-RQ key/chords

@@ -14,13 +14,14 @@ def _r() -> redis_lib.Redis:
     return redis_lib.from_url(REDIS_URL, decode_responses=True)
 
 
-def create_job(job_id: str, file_path: str) -> dict:
+def create_job(job_id: str, file_path: str, original_name: str = "") -> dict:
     job = {
         "job_id": job_id,
         "status": "queued",
         "progress": 0,
         "current_step": None,
         "file_path": file_path,
+        "original_name": original_name,
         "error": None,
     }
     _r().setex(f"job:{job_id}", JOB_TTL, json.dumps(job))

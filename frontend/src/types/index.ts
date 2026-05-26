@@ -55,6 +55,7 @@ export interface VariationsData {
 export interface JobResult {
   job_id: string;
   status: string;
+  original_name: string;
   analysis: AnalysisData | null;
   beats: BeatData | null;
   harmony: HarmonyData | null;

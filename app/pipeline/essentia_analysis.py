@@ -109,19 +109,19 @@ def analyze_audio(file_path: str, job_id: Optional[str] = None) -> dict:
         "key_confidence":   key_confidence,
         "camelot":          camelot,
         "chord_progression": chord_progression,
-        # structure
-        "segments": segments,
+        # structure — wrapped so frontend can access analysis.structure.segments
+        "structure": {"segments": segments},
         # energy
-        "energy_curve":   energy_curve,
-        "lufs":           lufs,
-        "dynamic_range":  dynamic_range,
+        "energy_curve":        energy_curve,
+        "loudness_integrated": lufs,
+        "dynamic_range":       dynamic_range,
         # spectral
         "spectral_centroid": sp["centroid"],
         "brightness":        sp["brightness"],
         "bass_intensity":    sp["bass_intensity"],
         "stereo_width":      stereo_width,
-        # waveform
-        "waveform": waveform,
+        # waveform — [[low, mid, high], ...] for Pixi.js and EnergyCurve
+        "waveform_data": waveform,
         # metadata
         "duration":    round(duration, 3),
         "sample_rate": SAMPLE_RATE,
@@ -210,13 +210,13 @@ def _segments(duration: float, bpm: float) -> list:
 
     segs = []
     if intro_end > 0:
-        segs.append({"type": "intro",  "start": 0.0,        "end": intro_end,   "bars": bar_count(0,          intro_end)})
+        segs.append({"label": "intro",  "start": 0.0,        "end": intro_end,   "bars": bar_count(0,          intro_end)})
     if intro_end < outro_start:
-        segs.append({"type": "drop",   "start": intro_end,  "end": outro_start, "bars": bar_count(intro_end,  outro_start)})
+        segs.append({"label": "drop",   "start": intro_end,  "end": outro_start, "bars": bar_count(intro_end,  outro_start)})
     if outro_start < duration:
-        segs.append({"type": "outro",  "start": outro_start,"end": round(duration, 2), "bars": bar_count(outro_start, duration)})
+        segs.append({"label": "outro",  "start": outro_start,"end": round(duration, 2), "bars": bar_count(outro_start, duration)})
 
-    return segs or [{"type": "unknown", "start": 0.0, "end": round(duration, 2), "bars": bar_count(0, duration)}]
+    return segs or [{"label": "unknown", "start": 0.0, "end": round(duration, 2), "bars": bar_count(0, duration)}]
 
 
 def _energy_curve(audio: np.ndarray) -> list:
@@ -306,10 +306,10 @@ def _stereo_width(file_path: str) -> float:
         return 0.0
 
 
-def _waveform_rgb(audio: np.ndarray) -> dict:
+def _waveform_rgb(audio: np.ndarray) -> list:
     """
     Per-10ms frame amplitude in 3 bands for Pixi.js RGB waveform.
-    Returns {"low": [...], "mid": [...], "high": [...]} normalised 0-1.
+    Returns [[low, mid, high], ...] normalised 0-1 — one entry per frame.
     """
     frame_size = 1024
     hop_size   = int(SAMPLE_RATE * 0.01)   # 10 ms ≈ 441 samples
@@ -336,7 +336,10 @@ def _waveform_rgb(audio: np.ndarray) -> dict:
             return [0.0] * len(vals)
         return [round(v / mx, 4) for v in vals]
 
-    return {"low": _norm(low_vals), "mid": _norm(mid_vals), "high": _norm(high_vals)}
+    lows  = _norm(low_vals)
+    mids  = _norm(mid_vals)
+    highs = _norm(high_vals)
+    return [[l, m, h] for l, m, h in zip(lows, mids, highs)]
 
 
 def _update(job_id: Optional[str], **kwargs) -> None:

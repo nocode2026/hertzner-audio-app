@@ -134,7 +134,8 @@ async def upload_audio(file: UploadFile) -> UploadResponse:
     dest.write_bytes(raw)
 
     # --- create job record in Redis ---
-    create_job(job_id, str(dest))
+    original_name = file.filename or ""
+    create_job(job_id, str(dest), original_name=original_name)
     logger.info("Job %s queued — file: %s (%d bytes)", job_id, dest.name, len(raw))
 
     # --- dispatch Celery task (imported lazily to avoid circular import) ---
@@ -169,6 +170,7 @@ async def job_result(job_id: str) -> JobResultResponse:
     return JobResultResponse(
         job_id=job_id,
         status=job.get("status", "done"),
+        original_name=job.get("original_name", ""),
         analysis=data.get("analysis"),
         beats=data.get("beats"),
         harmony=data.get("harmony"),

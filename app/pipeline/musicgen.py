@@ -511,6 +511,8 @@ def generate_variations(
                     out_path,
                     torch.from_numpy(audio).unsqueeze(0),
                     _OUTPUT_SR,
+                    encoding="PCM_S",
+                    bits_per_sample=16,
                 )
                 cfg["bucket"].append(out_path)
                 logger.info(

@@ -158,7 +158,7 @@ def _save(audio_np: np.ndarray, sr: int, output_path: str) -> None:
         tensor = torch.from_numpy(audio_np.T.astype(np.float32))  # (channels, samples)
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    torchaudio.save(output_path, tensor, sr)
+    torchaudio.save(output_path, tensor, sr, encoding="PCM_S", bits_per_sample=16)
 
 
 def _copy(src: str, dst: str) -> None:
